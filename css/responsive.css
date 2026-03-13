@@ -1,0 +1,57 @@
+/* ===== RESPONSIVE - MOBILE FRIENDLY ===== */
+@media(max-width:768px){
+  .town-map-wrap{max-width:100%}
+  .region-map-wrap{max-width:100%}
+  .player-bar{font-size:.8rem;padding:8px 12px;gap:8px}
+  .combat-arena{gap:12px}
+  .combatant{min-width:130px;padding:14px}
+  .modal{width:95%;max-height:85vh;padding:18px}
+}
+
+@media(max-width:600px){
+  .class-cards{flex-direction:column;align-items:center}
+  .class-card{width:90%}
+  .combat-arena{flex-direction:column}
+  .tile{font-size:1rem}
+  .tile svg{width:22px;height:22px}
+  .tile .tile-icon{width:18px;height:18px}
+  .board{gap:2px}
+  .city-title{font-size:1.4rem}
+  .town-actions{gap:6px}
+  .town-action-btn{padding:8px 12px;font-size:.85rem}
+  .combat-actions button{padding:8px 14px;font-size:.9rem}
+  .audio-panel{top:auto;bottom:10px;right:10px}
+  .modal{width:98%;max-height:90vh;border-radius:12px;padding:14px}
+  .player-bar{font-size:.75rem;gap:6px;padding:6px 8px}
+}
+
+@media(max-width:480px){
+  body{font-size:14px}
+  #char-screen h1{font-size:1.6rem}
+  #char-screen h2{font-size:.85rem;margin-bottom:16px}
+  .class-card{padding:14px;width:95%}
+  .name-input input{width:200px;font-size:1rem;padding:8px}
+  #start-btn{padding:10px 30px;font-size:1rem}
+  .board{max-width:100%;gap:2px}
+  .tile{font-size:.85rem;border-width:1px}
+  .dungeon-top{font-size:.8rem}
+  .game-log{font-size:.75rem;max-height:90px}
+  .combat-log{font-size:.75rem;max-height:100px}
+  .combatant{min-width:110px;padding:10px}
+  .combatant svg{width:60px;height:60px}
+  .dice-result{font-size:2rem;min-height:40px}
+  .town-action-btn{padding:6px 10px;font-size:.8rem}
+}
+
+@media(max-width:360px){
+  .player-bar{flex-direction:column;align-items:flex-start;gap:4px}
+  .town-actions{flex-direction:column;align-items:center}
+}
+
+/* Touch-friendly minimum tap targets */
+@media(pointer:coarse){
+  button{min-height:44px;min-width:44px}
+  .tile{min-width:36px;min-height:36px}
+  .stat-alloc button,.lu-stat button{min-width:44px;min-height:44px}
+  .modal-close{min-width:44px;min-height:44px;width:44px;height:44px}
+}

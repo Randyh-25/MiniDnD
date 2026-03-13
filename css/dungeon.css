@@ -1,0 +1,41 @@
+/* ===== DUNGEON ===== */
+#dungeon-screen{background:linear-gradient(180deg,#0a0a1a 0%,#1a1a2e 100%);padding:10px}
+.dungeon-top{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.dungeon-top .info{font-size:.85rem;color:#999}
+#flee-btn{background:#c23152;color:#fff;padding:6px 16px}
+.board{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;max-width:490px;width:100%;margin:0 auto}
+.tile{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;transition:all .2s;border:2px solid transparent;position:relative}
+.tile.fog{background:#111;cursor:default}
+.tile.revealed{border-color:#333}
+.tile.wall{background:#2a2a2a;cursor:default}
+.tile.empty{background:#1e3a5f}
+.tile.monster{background:#3a1a2e}
+.tile.treasure{background:#3a3a1e}
+.tile.event{background:#1a3a3a}
+.tile.exit{background:#1a3a1e;border-color:#4ecca3}
+.tile.player{border-color:#e94560;box-shadow:0 0 10px rgba(233,69,96,.5)}
+.tile.adjacent{border-color:#7ec8e3;cursor:pointer}
+.tile.adjacent:hover{box-shadow:0 0 12px rgba(126,200,227,.4);transform:scale(1.05)}
+.tile svg{width:28px;height:28px}
+.tile .tile-icon{width:24px;height:24px}
+
+/* Region themes */
+.board.forest .tile.empty{background:#1a3a2e}
+.board.forest .tile.revealed{border-color:#2d6a4f}
+.board.desert .tile.empty{background:#3a3a1e}
+.board.desert .tile.revealed{border-color:#8b6914}
+.board.hell .tile.empty{background:#3a1a1a}
+.board.hell .tile.revealed{border-color:#6a040f}
+.board.mountains .tile.empty{background:#2a2a3e}
+.board.mountains .tile.revealed{border-color:#6a7a8a}
+.board.swamp .tile.empty{background:#1a2a1a}
+.board.swamp .tile.revealed{border-color:#4a6a3a}
+.board.caves .tile.empty{background:#1a1a1a}
+.board.caves .tile.revealed{border-color:#4a3a5a}
+
+.game-log{max-width:490px;width:100%;margin-top:10px;background:#111;border-radius:8px;padding:10px;max-height:120px;overflow-y:auto;font-size:.8rem;color:#999}
+.game-log .log-entry{padding:2px 0;border-bottom:1px solid #222}
+.game-log .log-crit{color:#ffd700}
+.game-log .log-dmg{color:#e94560}
+.game-log .log-heal{color:#4ecca3}
+.game-log .log-info{color:#7ec8e3}

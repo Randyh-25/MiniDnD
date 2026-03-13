@@ -2,1016 +2,169 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dungeon Quest: DnD Board Adventure</title>
-<style>
-/* ===== RESET & BASE ===== */
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#1a1a2e;color:#e0e0e0;min-height:100vh;overflow-x:hidden}
-button{cursor:pointer;font-family:inherit;border:none;padding:8px 16px;border-radius:6px;font-size:.95rem;transition:all .2s}
-button:hover{filter:brightness(1.2);transform:scale(1.03)}
-input{font-family:inherit;padding:8px 12px;border-radius:6px;border:1px solid #444;background:#2a2a4a;color:#e0e0e0}
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>MiniDnD – Dungeon Crawler RPG</title>
 
-/* ===== SCREENS ===== */
-.screen{display:none;width:100%;min-height:100vh;flex-direction:column;align-items:center;justify-content:center}
-.screen.active{display:flex}
-
-/* ===== CHARACTER CREATION ===== */
-#char-screen{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);padding:20px}
-#char-screen h1{font-size:2.2rem;color:#e94560;text-shadow:0 0 20px rgba(233,69,96,.5);margin-bottom:8px}
-#char-screen h2{color:#aaa;font-weight:normal;margin-bottom:30px;font-size:1rem}
-.class-cards{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;margin-bottom:20px}
-.class-card{background:linear-gradient(145deg,#16213e,#1a1a2e);border:2px solid #333;border-radius:12px;padding:20px;width:180px;text-align:center;transition:all .3s;cursor:pointer}
-.class-card:hover,.class-card.selected{border-color:#e94560;box-shadow:0 0 20px rgba(233,69,96,.3);transform:translateY(-4px)}
-.class-card svg{width:64px;height:64px;margin-bottom:10px}
-.class-card h3{color:#e94560;margin-bottom:6px}
-.class-card p{font-size:.8rem;color:#999}
-.stat-line{font-size:.75rem;color:#7ec8e3;margin-top:4px}
-#custom-panel{background:#16213e;border-radius:12px;padding:20px;margin:10px 0;display:none;max-width:400px;width:100%}
-#custom-panel h3{color:#e94560;margin-bottom:12px}
-.stat-alloc{display:flex;align-items:center;justify-content:space-between;margin:8px 0}
-.stat-alloc label{width:60px;font-weight:bold;color:#7ec8e3}
-.stat-alloc button{width:32px;height:32px;padding:0;background:#e94560;color:#fff;font-size:1.1rem;border-radius:50%}
-.stat-alloc span{width:40px;text-align:center;font-size:1.1rem}
-#points-left{color:#e94560;font-weight:bold;font-size:1.1rem;margin-bottom:10px}
-.name-input{margin:16px 0;text-align:center}
-.name-input input{width:240px;text-align:center;font-size:1.1rem;padding:10px}
-#start-btn{background:linear-gradient(135deg,#e94560,#c23152);color:#fff;padding:12px 40px;font-size:1.2rem;border-radius:30px;margin-top:10px}
-#start-btn:disabled{opacity:.4;cursor:not-allowed}
-
-/* ===== CITY HUB ===== */
-#city-screen{background:linear-gradient(180deg,#0f3460 0%,#16213e 100%);padding:20px}
-.city-title{font-size:1.8rem;color:#e94560;margin-bottom:4px}
-.city-sub{color:#999;margin-bottom:20px}
-.player-bar{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;background:#1a1a2e;padding:12px 20px;border-radius:10px;margin-bottom:20px;font-size:.9rem}
-.player-bar .stat{display:flex;align-items:center;gap:4px}
-.player-bar .stat b{color:#e94560}
-.hp-bar-wrap{width:100px;height:10px;background:#333;border-radius:5px;overflow:hidden;display:inline-block;vertical-align:middle}
-.hp-bar{height:100%;background:linear-gradient(90deg,#e94560,#4ecca3);transition:width .5s;border-radius:5px}
-.xp-bar-wrap{width:80px;height:8px;background:#333;border-radius:5px;overflow:hidden;display:inline-block;vertical-align:middle}
-.xp-bar{height:100%;background:linear-gradient(90deg,#7ec8e3,#4ecca3);transition:width .5s;border-radius:5px}
-.city-buildings{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:20px}
-.building-btn{background:linear-gradient(145deg,#16213e,#1a1a2e);border:2px solid #333;border-radius:12px;padding:20px 24px;text-align:center;min-width:130px;transition:all .3s}
-.building-btn:hover{border-color:#e94560;box-shadow:0 0 15px rgba(233,69,96,.3);transform:translateY(-3px)}
-.building-btn .icon{font-size:2rem;margin-bottom:6px}
-.building-btn .label{font-size:.9rem;color:#e0e0e0}
-.region-select{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:10px}
-.region-btn{padding:12px 24px;border-radius:10px;font-size:1rem;color:#fff;font-weight:bold}
-.region-btn.forest{background:linear-gradient(135deg,#2d6a4f,#1b4332)}
-.region-btn.desert{background:linear-gradient(135deg,#c2a83e,#8b6914)}
-.region-btn.hell{background:linear-gradient(135deg,#9b2226,#6a040f)}
-#inventory-btn,#equip-btn{background:#2a2a4a;color:#e0e0e0;border:1px solid #555;margin:4px}
-
-/* ===== MODAL ===== */
-.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center}
-.modal-overlay.open{display:flex}
-.modal{background:linear-gradient(145deg,#16213e,#1a1a2e);border:2px solid #e94560;border-radius:16px;padding:24px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto;animation:slideIn .3s ease}
-@keyframes slideIn{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
-.modal h2{color:#e94560;margin-bottom:16px;text-align:center}
-.modal-close{background:#e94560;color:#fff;border-radius:50%;width:32px;height:32px;padding:0;float:right;font-size:1.2rem}
-.modal-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #333;position:relative}
-.modal-item:hover{background:rgba(233,69,96,.1);border-radius:6px}
-.modal-item .item-name{color:#7ec8e3}
-.modal-item .item-cost{color:#ffd700}
-.modal-item button{background:#e94560;color:#fff;padding:4px 12px;font-size:.85rem}
-.tooltip{display:none;position:absolute;background:#1a1a2e;border:1px solid #e94560;border-radius:8px;padding:10px;z-index:200;font-size:.8rem;min-width:160px;bottom:100%;left:50%;transform:translateX(-50%);pointer-events:none}
-.modal-item:hover .tooltip{display:block}
-
-/* ===== DUNGEON ===== */
-#dungeon-screen{background:linear-gradient(180deg,#0a0a1a 0%,#1a1a2e 100%);padding:10px}
-.dungeon-top{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px;margin-bottom:10px;flex-wrap:wrap;gap:8px}
-.dungeon-top .info{font-size:.85rem;color:#999}
-#flee-btn{background:#c23152;color:#fff;padding:6px 16px}
-.board{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;max-width:490px;width:100%;margin:0 auto}
-.tile{aspect-ratio:1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;transition:all .2s;border:2px solid transparent;position:relative}
-.tile.fog{background:#111;cursor:default}
-.tile.revealed{border-color:#333}
-.tile.wall{background:#2a2a2a;cursor:default}
-.tile.empty{background:#1e3a5f}
-.tile.monster{background:#3a1a2e}
-.tile.treasure{background:#3a3a1e}
-.tile.event{background:#1a3a3a}
-.tile.exit{background:#1a3a1e;border-color:#4ecca3}
-.tile.player{border-color:#e94560;box-shadow:0 0 10px rgba(233,69,96,.5)}
-.tile.adjacent{border-color:#7ec8e3;cursor:pointer}
-.tile.adjacent:hover{box-shadow:0 0 12px rgba(126,200,227,.4);transform:scale(1.05)}
-.tile svg{width:28px;height:28px}
-/* Region themes */
-.board.forest .tile.empty{background:#1a3a2e}.board.forest .tile.revealed{border-color:#2d6a4f}
-.board.desert .tile.empty{background:#3a3a1e}.board.desert .tile.revealed{border-color:#8b6914}
-.board.hell .tile.empty{background:#3a1a1a}.board.hell .tile.revealed{border-color:#6a040f}
-
-.game-log{max-width:490px;width:100%;margin-top:10px;background:#111;border-radius:8px;padding:10px;max-height:120px;overflow-y:auto;font-size:.8rem;color:#999}
-.game-log .log-entry{padding:2px 0;border-bottom:1px solid #222}
-.game-log .log-crit{color:#ffd700}.game-log .log-dmg{color:#e94560}.game-log .log-heal{color:#4ecca3}.game-log .log-info{color:#7ec8e3}
-
-/* ===== COMBAT ===== */
-#combat-screen{background:linear-gradient(180deg,#1a0a1e 0%,#1a1a2e 100%);padding:20px}
-.combat-arena{display:flex;justify-content:space-around;align-items:center;max-width:600px;width:100%;margin-bottom:20px;flex-wrap:wrap;gap:20px}
-.combatant{text-align:center;padding:20px;border-radius:12px;background:#16213e;min-width:160px;position:relative}
-.combatant svg{width:80px;height:80px}
-.combatant h3{margin:8px 0 4px}
-.combatant .hp-text{font-size:.85rem;color:#999}
-.combat-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
-.combat-actions button{padding:10px 20px;border-radius:8px;font-size:1rem;font-weight:bold}
-#atk-btn{background:linear-gradient(135deg,#e94560,#c23152);color:#fff}
-#skill-btn{background:linear-gradient(135deg,#7ec8e3,#4ea8c8);color:#111}
-#skill-btn:disabled{opacity:.4}
-#potion-btn{background:linear-gradient(135deg,#4ecca3,#2d8a6e);color:#111}
-#potion-btn:disabled{opacity:.4}
-.dice-result{font-size:2.5rem;font-weight:bold;color:#ffd700;min-height:60px;display:flex;align-items:center;justify-content:center}
-.combat-log{max-width:500px;width:100%;background:#111;border-radius:8px;padding:10px;max-height:150px;overflow-y:auto;font-size:.85rem;color:#999;text-align:left}
-
-/* ===== LEVEL UP ===== */
-#levelup-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:150;align-items:center;justify-content:center}
-#levelup-overlay.open{display:flex}
-#levelup-panel{background:linear-gradient(145deg,#16213e,#1a1a2e);border:2px solid #ffd700;border-radius:16px;padding:30px;text-align:center;animation:slideIn .3s ease}
-#levelup-panel h2{color:#ffd700;font-size:1.8rem;margin-bottom:10px}
-#levelup-panel .pts{color:#e94560;font-size:1.1rem;margin-bottom:16px}
-.lu-stat{display:flex;align-items:center;justify-content:center;gap:10px;margin:8px 0}
-.lu-stat label{width:50px;text-align:right;color:#7ec8e3;font-weight:bold}
-.lu-stat button{width:30px;height:30px;border-radius:50%;background:#e94560;color:#fff;padding:0;font-size:1rem}
-#lu-confirm{background:linear-gradient(135deg,#ffd700,#c2a83e);color:#111;padding:10px 30px;font-size:1.1rem;border-radius:20px;margin-top:16px}
-#lu-confirm:disabled{opacity:.4}
-
-/* ===== EFFECTS ===== */
-@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
-.shake{animation:shake .3s ease}
-@keyframes flash{0%{opacity:1}50%{opacity:0}100%{opacity:1}}
-.flash{animation:flash .15s ease 3}
-.float-dmg{position:absolute;color:#e94560;font-weight:bold;font-size:1.2rem;animation:floatUp 1s ease forwards;pointer-events:none;z-index:50}
-.float-dmg.heal{color:#4ecca3}
-.float-dmg.crit{color:#ffd700;font-size:1.5rem}
-@keyframes floatUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-40px)}}
-
-/* ===== GAME OVER ===== */
-#gameover-screen{background:linear-gradient(180deg,#1a0a0a,#1a1a2e);padding:20px;text-align:center}
-#gameover-screen h1{font-size:2.5rem;color:#e94560;margin-bottom:10px}
-#gameover-screen p{color:#999;margin-bottom:20px}
-#restart-btn{background:linear-gradient(135deg,#e94560,#c23152);color:#fff;padding:12px 40px;font-size:1.1rem;border-radius:30px}
-
-/* ===== RESPONSIVE ===== */
-@media(max-width:600px){
-  .class-cards{flex-direction:column;align-items:center}
-  .class-card{width:90%}
-  .combat-arena{flex-direction:column}
-  .tile{font-size:1rem}
-  .board{gap:2px}
-}
-</style>
+<!-- CSS Modules -->
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/chargen.css">
+<link rel="stylesheet" href="css/city.css">
+<link rel="stylesheet" href="css/dungeon.css">
+<link rel="stylesheet" href="css/combat.css">
+<link rel="stylesheet" href="css/modals.css">
+<link rel="stylesheet" href="css/effects.css">
+<link rel="stylesheet" href="css/audio-controls.css">
+<link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
 
+<!-- ===== AUDIO PANEL ===== -->
+<div class="audio-panel" id="audio-panel">
+  <button id="mute-btn" title="Toggle sound">
+    <svg viewBox="0 0 24 24" width="22" height="22"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" fill="currentColor"/></svg>
+  </button>
+  <input type="range" class="vol-slider" id="vol-slider" min="0" max="1" step="0.05" value="0.4">
+</div>
+
 <!-- ===== CHARACTER CREATION ===== -->
-<div id="char-screen" class="screen active">
-  <h1>⚔️ Dungeon Quest</h1>
-  <h2>DnD Board Adventure — Choose Your Class</h2>
+<div class="screen active" id="char-screen">
+  <h1>MiniDnD</h1>
+  <h2>Choose your class &amp; enter the dungeons</h2>
   <div class="class-cards">
     <div class="class-card" onclick="selectClass('warrior')">
-      <svg viewBox="0 0 64 64"><rect x="26" y="4" width="12" height="28" rx="2" fill="#b0b0b0"/><rect x="20" y="28" width="24" height="6" rx="2" fill="#8b7355"/><circle cx="32" cy="48" r="14" fill="#c23152"/><rect x="28" y="36" width="8" height="12" rx="2" fill="#b0b0b0"/></svg>
-      <h3>Warrior</h3>
-      <p>Tank with high HP &amp; DEF</p>
+      <svg viewBox="0 0 64 64"><rect x="26" y="2" width="12" height="34" rx="2" fill="#b0b0b0"/><circle cx="32" cy="48" r="14" fill="#c23152"/><rect x="24" y="34" width="16" height="6" rx="2" fill="#b0b0b0"/></svg>
+      <h3>Warrior</h3><p>Tanky fighter with Shield Bash</p>
       <div class="stat-line">HP:120 ATK:10 DEF:12 CRIT:5%</div>
     </div>
     <div class="class-card" onclick="selectClass('mage')">
-      <svg viewBox="0 0 64 64"><polygon points="32,2 40,22 24,22" fill="#7ec8e3"/><rect x="30" y="22" width="4" height="30" rx="1" fill="#8b7355"/><circle cx="32" cy="10" r="6" fill="#7ec8e3" opacity=".5"/><circle cx="32" cy="48" r="14" fill="#4a1a6b"/></svg>
-      <h3>Mage</h3>
-      <p>High ATK, arcane power</p>
+      <svg viewBox="0 0 64 64"><polygon points="32,2 42,26 22,26" fill="#7ec8e3"/><rect x="30" y="26" width="4" height="30" rx="1" fill="#8b7355"/><circle cx="32" cy="48" r="14" fill="#4a1a6b"/><circle cx="32" cy="8" r="4" fill="#ffd700"/></svg>
+      <h3>Mage</h3><p>Powerful spells with Mana Blast</p>
       <div class="stat-line">HP:80 ATK:16 DEF:6 CRIT:10%</div>
     </div>
     <div class="class-card" onclick="selectClass('assassin')">
-      <svg viewBox="0 0 64 64"><path d="M32 4L38 20H26Z" fill="#555"/><rect x="30" y="18" width="4" height="24" rx="1" fill="#333"/><circle cx="32" cy="48" r="14" fill="#1a3a1a"/><ellipse cx="32" cy="10" rx="8" ry="3" fill="#333" opacity=".5"/></svg>
-      <h3>Assassin</h3>
-      <p>Balanced ATK, high CRIT</p>
+      <svg viewBox="0 0 64 64"><path d="M32 2L40 22H24Z" fill="#555"/><path d="M24 22L32 2L40 22" fill="#666"/><circle cx="32" cy="48" r="14" fill="#1a3a1a"/></svg>
+      <h3>Assassin</h3><p>High crit with Shadow Step</p>
       <div class="stat-line">HP:90 ATK:14 DEF:8 CRIT:20%</div>
     </div>
     <div class="class-card" onclick="selectClass('custom')">
-      <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="20" fill="none" stroke="#e94560" stroke-width="3" stroke-dasharray="8 4"/><text x="32" y="38" text-anchor="middle" fill="#e94560" font-size="20">?</text></svg>
-      <h3>Custom</h3>
-      <p>Allocate 15 stat points</p>
-      <div class="stat-line">You decide your fate</div>
+      <svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="22" fill="none" stroke="#e94560" stroke-width="3" stroke-dasharray="6 4"/><text x="32" y="38" text-anchor="middle" fill="#e94560" font-size="20">?</text></svg>
+      <h3>Custom</h3><p>Allocate your own stats</p>
+      <div class="stat-line">15 points to distribute</div>
     </div>
   </div>
+
   <div id="custom-panel">
-    <h3>Custom Stat Allocation</h3>
+    <h3>Custom Stats</h3>
     <div id="points-left">Points: 15</div>
-    <div class="stat-alloc"><label>HP</label><button onclick="allocStat('hp',-1)">−</button><span id="cs-hp">0</span><button onclick="allocStat('hp',1)">+</button></div>
-    <div class="stat-alloc"><label>ATK</label><button onclick="allocStat('atk',-1)">−</button><span id="cs-atk">0</span><button onclick="allocStat('atk',1)">+</button></div>
-    <div class="stat-alloc"><label>DEF</label><button onclick="allocStat('def',-1)">−</button><span id="cs-def">0</span><button onclick="allocStat('def',1)">+</button></div>
-    <div class="stat-alloc"><label>CRIT</label><button onclick="allocStat('crit',-1)">−</button><span id="cs-crit">0</span><button onclick="allocStat('crit',1)">+</button></div>
+    <div class="stat-alloc"><label>HP</label><button onclick="allocStat('hp',-1)">-</button><span id="cs-hp">0</span><button onclick="allocStat('hp',1)">+</button></div>
+    <div class="stat-alloc"><label>ATK</label><button onclick="allocStat('atk',-1)">-</button><span id="cs-atk">0</span><button onclick="allocStat('atk',1)">+</button></div>
+    <div class="stat-alloc"><label>DEF</label><button onclick="allocStat('def',-1)">-</button><span id="cs-def">0</span><button onclick="allocStat('def',1)">+</button></div>
+    <div class="stat-alloc"><label>CRIT</label><button onclick="allocStat('crit',-1)">-</button><span id="cs-crit">0</span><button onclick="allocStat('crit',1)">+</button></div>
   </div>
-  <div class="name-input"><input id="player-name" placeholder="Enter your name..." maxlength="20"></div>
-  <button id="start-btn" onclick="startGame()" disabled>Begin Adventure</button>
+
+  <div class="name-input">
+    <input type="text" id="player-name" placeholder="Enter hero name..." maxlength="20">
+  </div>
+  <button id="start-btn" disabled onclick="startGame()">Begin Adventure</button>
 </div>
 
 <!-- ===== CITY HUB ===== -->
-<div id="city-screen" class="screen">
-  <div class="city-title">🏰 City of Veridia</div>
-  <div class="city-sub">Prepare for your next dungeon run</div>
+<div class="screen" id="city-screen">
   <div class="player-bar" id="city-stats"></div>
-  <div class="city-buildings">
-    <div class="building-btn" onclick="openModal('inn')"><div class="icon">🏨</div><div class="label">Inn</div></div>
-    <div class="building-btn" onclick="openModal('market')"><div class="icon">🛒</div><div class="label">Market</div></div>
-    <div class="building-btn" onclick="openModal('blacksmith')"><div class="icon">🔨</div><div class="label">Blacksmith</div></div>
-    <div class="building-btn" onclick="openModal('library')"><div class="icon">📚</div><div class="label">Library</div></div>
+
+  <!-- Town Action Buttons -->
+  <div class="town-actions">
+    <button class="town-action-btn" onclick="openModal('inventory')">
+      <svg viewBox="0 0 24 24" width="18" height="18"><path d="M20 6h-3V4c0-1.1-.9-2-2-2H9c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM9 4h6v2H9V4zm11 16H4V8h16v12z" fill="currentColor"/></svg>
+      Inventory
+    </button>
+    <button class="town-action-btn" onclick="openModal('equipment')">
+      <svg viewBox="0 0 24 24" width="18" height="18"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z" fill="currentColor"/></svg>
+      Equipment
+    </button>
   </div>
-  <div>
-    <button id="inventory-btn" onclick="openModal('inventory')">🎒 Inventory</button>
-    <button id="equip-btn" onclick="openModal('equipment')">🛡️ Equipment</button>
-  </div>
-  <div style="margin-top:20px"><b style="color:#e94560">Choose Region:</b></div>
-  <div class="region-select">
-    <button class="region-btn forest" onclick="enterDungeon('forest')">🌲 Forest</button>
-    <button class="region-btn desert" onclick="enterDungeon('desert')">🏜️ Desert</button>
-    <button class="region-btn hell" onclick="enterDungeon('hell')">🔥 Hell</button>
+
+  <!-- Town Map -->
+  <div class="town-map-wrap" id="town-map-container"></div>
+
+  <!-- Region Map -->
+  <div class="region-title">Venture Forth — Choose a Region</div>
+  <div class="region-map-wrap" id="region-map-container" style="position:relative">
+    <div class="region-tooltip" id="region-tooltip"></div>
   </div>
 </div>
 
-<!-- ===== MODAL ===== -->
+<!-- ===== MODAL OVERLAY ===== -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModalOverlay(event)">
   <div class="modal" id="modal-content"></div>
 </div>
 
 <!-- ===== DUNGEON ===== -->
-<div id="dungeon-screen" class="screen">
+<div class="screen" id="dungeon-screen">
+  <div class="player-bar" id="dungeon-stats"></div>
   <div class="dungeon-top">
-    <div class="info" id="dungeon-info"></div>
-    <div>
-      <button id="inventory-btn2" onclick="openModal('inventory')" style="background:#2a2a4a;color:#e0e0e0;border:1px solid #555">🎒</button>
-      <button id="flee-btn" onclick="fleeDungeon()">🏃 Flee</button>
-    </div>
+    <span class="info" id="dungeon-info"></span>
+    <button id="flee-btn" onclick="fleeDungeon()">
+      <svg viewBox="0 0 24 24" width="16" height="16" style="vertical-align:middle;fill:#fff"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-.17-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7z"/></svg>
+      Flee
+    </button>
   </div>
-  <div class="player-bar" id="dungeon-stats" style="margin-bottom:10px;max-width:490px"></div>
   <div class="board" id="board"></div>
   <div class="game-log" id="game-log"></div>
 </div>
 
 <!-- ===== COMBAT ===== -->
-<div id="combat-screen" class="screen">
-  <h2 style="color:#e94560;margin-bottom:16px">⚔️ Combat!</h2>
+<div class="screen" id="combat-screen">
+  <div class="player-bar" id="combat-stats-bar"></div>
   <div class="combat-arena">
     <div class="combatant" id="player-combatant"></div>
     <div class="dice-result" id="dice-result"></div>
     <div class="combatant" id="enemy-combatant"></div>
   </div>
   <div class="combat-actions" id="combat-actions">
-    <button id="atk-btn" onclick="combatAttack()">🗡️ Attack</button>
-    <button id="skill-btn" onclick="combatSkill()">✨ Skill</button>
-    <button id="potion-btn" onclick="combatPotion()">🧪 Potion</button>
+    <button id="atk-btn" onclick="combatAttack()">Attack</button>
+    <button id="skill-btn" onclick="combatSkill()">Skill</button>
+    <button id="potion-btn" onclick="combatPotion()">Potion</button>
   </div>
   <div class="combat-log" id="combat-log"></div>
 </div>
 
-<!-- ===== LEVEL UP ===== -->
+<!-- ===== LEVEL UP OVERLAY ===== -->
 <div id="levelup-overlay">
   <div id="levelup-panel">
-    <h2>🎉 Level Up!</h2>
+    <h2>Level Up!</h2>
     <div class="pts" id="lu-pts">Points: 3</div>
-    <div class="lu-stat"><label>HP</label><button onclick="luAlloc('hp',-1)">−</button><span id="lu-hp">0</span><button onclick="luAlloc('hp',1)">+</button></div>
-    <div class="lu-stat"><label>ATK</label><button onclick="luAlloc('atk',-1)">−</button><span id="lu-atk">0</span><button onclick="luAlloc('atk',1)">+</button></div>
-    <div class="lu-stat"><label>DEF</label><button onclick="luAlloc('def',-1)">−</button><span id="lu-def">0</span><button onclick="luAlloc('def',1)">+</button></div>
-    <div class="lu-stat"><label>CRIT</label><button onclick="luAlloc('crit',-1)">−</button><span id="lu-crit">0</span><button onclick="luAlloc('crit',1)">+</button></div>
-    <button id="lu-confirm" onclick="confirmLevelUp()" disabled>Confirm</button>
+    <div class="lu-stat"><label>HP</label><button onclick="luAlloc('hp',-1)">-</button><span id="lu-hp">0</span><button onclick="luAlloc('hp',1)">+</button></div>
+    <div class="lu-stat"><label>ATK</label><button onclick="luAlloc('atk',-1)">-</button><span id="lu-atk">0</span><button onclick="luAlloc('atk',1)">+</button></div>
+    <div class="lu-stat"><label>DEF</label><button onclick="luAlloc('def',-1)">-</button><span id="lu-def">0</span><button onclick="luAlloc('def',1)">+</button></div>
+    <div class="lu-stat"><label>CRIT</label><button onclick="luAlloc('crit',-1)">-</button><span id="lu-crit">0</span><button onclick="luAlloc('crit',1)">+</button></div>
+    <button id="lu-confirm" disabled onclick="confirmLevelUp()">Confirm</button>
   </div>
 </div>
 
 <!-- ===== GAME OVER ===== -->
-<div id="gameover-screen" class="screen">
-  <h1>💀 Game Over</h1>
-  <p id="go-text">You have fallen in the dungeon...</p>
+<div class="screen" id="gameover-screen">
+  <h1>Game Over</h1>
   <p id="go-stats"></p>
-  <button id="restart-btn" onclick="location.reload()">🔄 Play Again</button>
+  <button id="restart-btn" onclick="location.reload()">
+    <svg viewBox="0 0 24 24" width="18" height="18" style="vertical-align:middle;fill:#fff;margin-right:4px"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+    Try Again
+  </button>
 </div>
 
-<script>
-/* ============================================================
-   GAME STATE
-   ============================================================ */
-const CLASS_PRESETS = {
-  warrior:  { hp:120, maxHp:120, atk:10, def:12, crit:5,  skill:'Shield Bash', skillCD:4 },
-  mage:     { hp:80,  maxHp:80,  atk:16, def:6,  crit:10, skill:'Mana Blast',  skillCD:3 },
-  assassin: { hp:90,  maxHp:90,  atk:14, def:8,  crit:20, skill:'Shadow Step', skillCD:3 }
-};
-
-const MONSTERS = {
-  forest: [
-    { name:'Wolf',          hp:30,  atk:8,  def:4,  xp:15, gold:10, svg:'<circle cx="32" cy="36" r="16" fill="#888"/><polygon points="22,26 26,16 30,26" fill="#888"/><polygon points="34,26 38,16 42,26" fill="#888"/><circle cx="27" cy="32" r="2" fill="#ff0"/><circle cx="37" cy="32" r="2" fill="#ff0"/>' },
-    { name:'Treant',        hp:60,  atk:10, def:8,  xp:30, gold:20, svg:'<rect x="26" y="30" width="12" height="24" rx="3" fill="#5a3a1a"/><circle cx="32" cy="22" r="16" fill="#2d6a4f"/><circle cx="26" cy="18" r="8" fill="#3a8a5f"/><circle cx="38" cy="18" r="8" fill="#3a8a5f"/>' },
-    { name:'Forest Spirit', hp:45,  atk:14, def:5,  xp:35, gold:25, svg:'<circle cx="32" cy="32" r="18" fill="#4ecca3" opacity=".6"/><circle cx="32" cy="32" r="10" fill="#7ec8e3" opacity=".8"/><circle cx="28" cy="28" r="2" fill="#fff"/><circle cx="36" cy="28" r="2" fill="#fff"/>' }
-  ],
-  desert: [
-    { name:'Scorpion',      hp:40,  atk:12, def:6,  xp:25, gold:15, svg:'<ellipse cx="32" cy="38" rx="16" ry="10" fill="#c2a83e"/><path d="M16 38Q10 20 22 16" stroke="#c2a83e" stroke-width="3" fill="none"/><circle cx="22" cy="16" r="3" fill="#e94560"/>' },
-    { name:'Sandworm',      hp:70,  atk:14, def:10, xp:40, gold:30, svg:'<ellipse cx="32" cy="36" rx="12" ry="20" fill="#c2a83e"/><circle cx="32" cy="20" r="10" fill="#8b6914"/><circle cx="28" cy="18" r="2" fill="#111"/><circle cx="36" cy="18" r="2" fill="#111"/>' },
-    { name:'Mummy',         hp:55,  atk:11, def:9,  xp:35, gold:25, svg:'<rect x="24" y="14" width="16" height="40" rx="4" fill="#d4c9a8"/><rect x="22" y="14" width="20" height="6" rx="3" fill="#d4c9a8"/><circle cx="28" cy="22" r="2" fill="#4a0"/><circle cx="36" cy="22" r="2" fill="#4a0"/>' }
-  ],
-  hell: [
-    { name:'Imp',           hp:35,  atk:13, def:5,  xp:30, gold:20, svg:'<circle cx="32" cy="34" r="14" fill="#9b2226"/><polygon points="24,24 28,12 32,24" fill="#9b2226"/><polygon points="32,24 36,12 40,24" fill="#9b2226"/><circle cx="28" cy="30" r="2" fill="#ffd700"/><circle cx="36" cy="30" r="2" fill="#ffd700"/>' },
-    { name:'Demon',         hp:80,  atk:18, def:12, xp:50, gold:40, svg:'<rect x="22" y="20" width="20" height="30" rx="4" fill="#6a040f"/><polygon points="22,24 16,10 28,20" fill="#6a040f"/><polygon points="42,24 48,10 36,20" fill="#6a040f"/><circle cx="28" cy="30" r="3" fill="#e94560"/><circle cx="36" cy="30" r="3" fill="#e94560"/>' },
-    { name:'Dragon',        hp:120, atk:22, def:15, xp:80, gold:60, svg:'<ellipse cx="32" cy="36" rx="18" ry="14" fill="#9b2226"/><polygon points="14,36 6,18 22,30" fill="#6a040f"/><polygon points="50,36 58,18 42,30" fill="#6a040f"/><polygon points="28,22 32,10 36,22" fill="#9b2226"/><circle cx="27" cy="30" r="2" fill="#ffd700"/><circle cx="37" cy="30" r="2" fill="#ffd700"/>' }
-  ]
-};
-
-const SHOP_ITEMS = [
-  { id:'potion',     name:'Health Potion', type:'consumable', cost:15, desc:'Restore 30 HP', heal:30 },
-  { id:'lg_potion',  name:'Large Potion',  type:'consumable', cost:35, desc:'Restore 60 HP', heal:60 },
-  { id:'iron_sword', name:'Iron Sword',    type:'weapon',     cost:50, desc:'+4 ATK', atk:4 },
-  { id:'steel_sword',name:'Steel Sword',   type:'weapon',     cost:120,desc:'+8 ATK', atk:8 },
-  { id:'leather',    name:'Leather Armor', type:'armor',      cost:40, desc:'+3 DEF', def:3 },
-  { id:'chain',      name:'Chain Mail',    type:'armor',      cost:100,desc:'+6 DEF', def:6 },
-  { id:'ring_crit',  name:'Crit Ring',     type:'accessory',  cost:80, desc:'+8% CRIT', crit:8 },
-  { id:'amulet_hp',  name:'HP Amulet',     type:'accessory',  cost:70, desc:'+20 Max HP', hp:20 }
-];
-
-let P = {}; // Player state
-let dungeon = {};
-let combat = {};
-let customStats = { hp:0, atk:0, def:0, crit:0 };
-let customPts = 15;
-let luStats = { hp:0, atk:0, def:0, crit:0 };
-let luPts = 3;
-let selectedClass = null;
-let encounteredMonsters = new Set();
-
-/* ============================================================
-   CHARACTER CREATION
-   ============================================================ */
-function selectClass(cls) {
-  selectedClass = cls;
-  document.querySelectorAll('.class-card').forEach((c,i) => {
-    const classes = ['warrior','mage','assassin','custom'];
-    c.classList.toggle('selected', classes[i]===cls);
-  });
-  document.getElementById('custom-panel').style.display = cls==='custom' ? 'block' : 'none';
-  checkStartReady();
-}
-
-function allocStat(stat, dir) {
-  if (dir>0 && customPts<=0) return;
-  if (dir<0 && customStats[stat]<=0) return;
-  customStats[stat] += dir;
-  customPts -= dir;
-  document.getElementById('cs-'+stat).textContent = customStats[stat];
-  document.getElementById('points-left').textContent = 'Points: '+customPts;
-  checkStartReady();
-}
-
-function checkStartReady() {
-  const name = document.getElementById('player-name').value.trim();
-  const ready = name.length>0 && selectedClass && (selectedClass!=='custom' || customPts===0);
-  document.getElementById('start-btn').disabled = !ready;
-}
-document.getElementById('player-name').addEventListener('input', checkStartReady);
-
-function startGame() {
-  const name = document.getElementById('player-name').value.trim();
-  if (selectedClass==='custom') {
-    const base = { hp:60+customStats.hp*6, atk:6+customStats.atk*2, def:4+customStats.def*2, crit:5+customStats.crit*3 };
-    P = { name, cls:'Custom', ...base, maxHp:base.hp, skill:'Power Strike', skillCD:3 };
-  } else {
-    const pr = CLASS_PRESETS[selectedClass];
-    P = { name, cls:selectedClass.charAt(0).toUpperCase()+selectedClass.slice(1), ...JSON.parse(JSON.stringify(pr)) };
-  }
-  P.level = 1; P.xp = 0; P.xpNext = 50;
-  P.gold = 30; P.inventory = []; P.equipment = { weapon:null, armor:null, accessory:null };
-  P.buffs = []; P.skillCooldown = 0; P.shieldBash = false; P.shadowStep = false;
-  P.potions = 2; P.monstersKilled = 0; P.dungeonsCleared = 0;
-  P.inventory.push({...SHOP_ITEMS[0]},{...SHOP_ITEMS[0]});
-  showScreen('city');
-}
-
-/* ============================================================
-   SCREENS & UI
-   ============================================================ */
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id+'-screen').classList.add('active');
-  if (id==='city') updateCityStats();
-  if (id==='dungeon') renderBoard();
-}
-
-function updateCityStats() {
-  const el = document.getElementById('city-stats');
-  el.innerHTML = statsBarHTML();
-}
-
-function updateDungeonStats() {
-  document.getElementById('dungeon-stats').innerHTML = statsBarHTML();
-}
-
-function statsBarHTML() {
-  const hpPct = Math.max(0,P.hp/P.maxHp*100);
-  const xpPct = P.xp/P.xpNext*100;
-  const potCount = P.inventory.filter(i=>i.type==='consumable').length;
-  return `
-    <span class="stat"><b>${P.name}</b> Lv.${P.level} ${P.cls}</span>
-    <span class="stat">❤️ ${P.hp}/${P.maxHp} <span class="hp-bar-wrap"><span class="hp-bar" style="width:${hpPct}%"></span></span></span>
-    <span class="stat">⚔️ <b>${getTotalStat('atk')}</b></span>
-    <span class="stat">🛡️ <b>${getTotalStat('def')}</b></span>
-    <span class="stat">🎯 <b>${getTotalStat('crit')}%</b></span>
-    <span class="stat">💰 <b>${P.gold}</b></span>
-    <span class="stat">XP ${P.xp}/${P.xpNext} <span class="xp-bar-wrap"><span class="xp-bar" style="width:${xpPct}%"></span></span></span>
-    <span class="stat">🧪 ${potCount}</span>
-  `;
-}
-
-function getTotalStat(stat) {
-  let val = P[stat];
-  for (const slot of ['weapon','armor','accessory']) {
-    const eq = P.equipment[slot];
-    if (eq && eq[stat]) val += eq[stat];
-  }
-  for (const b of P.buffs) { if (b.stat===stat) val += b.val; }
-  return val;
-}
-
-/* ============================================================
-   MODALS
-   ============================================================ */
-function openModal(type) {
-  const ov = document.getElementById('modal-overlay');
-  const mc = document.getElementById('modal-content');
-  let html = '<button class="modal-close" onclick="closeModal()">✕</button>';
-
-  if (type==='inn') {
-    const cost = 10;
-    const canHeal = P.hp < P.maxHp && P.gold >= cost;
-    html += `<h2>🏨 Inn</h2><p style="margin-bottom:12px;color:#999">Rest and recover your strength.</p>`;
-    html += `<p>HP: ${P.hp}/${P.maxHp}</p>`;
-    html += `<button onclick="innHeal()" ${canHeal?'':'disabled'} style="background:#4ecca3;color:#111;margin-top:12px;padding:10px 24px">Rest (${cost} gold) — Full Heal</button>`;
-  }
-
-  else if (type==='market') {
-    html += `<h2>🛒 Market</h2><p style="color:#999;margin-bottom:12px">Gold: ${P.gold}</p>`;
-    html += `<h3 style="color:#7ec8e3;margin-bottom:8px">Buy</h3>`;
-    for (const item of SHOP_ITEMS) {
-      html += `<div class="modal-item"><span class="item-name">${item.name}</span><span class="item-cost">${item.cost}g</span>
-        <button onclick="buyItem('${item.id}')" ${P.gold>=item.cost?'':'disabled'}>Buy</button>
-        <div class="tooltip">${item.desc}</div></div>`;
-    }
-    html += `<h3 style="color:#7ec8e3;margin:12px 0 8px">Sell</h3>`;
-    if (P.inventory.length===0) html += `<p style="color:#666">No items to sell.</p>`;
-    P.inventory.forEach((item,i) => {
-      const sell = Math.floor(item.cost/2);
-      html += `<div class="modal-item"><span class="item-name">${item.name}</span><span class="item-cost">${sell}g</span>
-        <button onclick="sellItem(${i})">Sell</button></div>`;
-    });
-  }
-
-  else if (type==='blacksmith') {
-    html += `<h2>🔨 Blacksmith</h2><p style="color:#999;margin-bottom:12px">Upgrade your equipment. Gold: ${P.gold}</p>`;
-    for (const slot of ['weapon','armor','accessory']) {
-      const eq = P.equipment[slot];
-      if (eq) {
-        const cost = Math.floor(eq.cost*0.6);
-        html += `<div class="modal-item"><span class="item-name">${eq.name} (${slot})</span><span class="item-cost">Upgrade: ${cost}g</span>
-          <button onclick="upgradeEquip('${slot}')" ${P.gold>=cost?'':'disabled'}>Upgrade</button></div>`;
-      } else {
-        html += `<div class="modal-item"><span style="color:#666">${slot}: empty</span></div>`;
-      }
-    }
-  }
-
-  else if (type==='library') {
-    html += `<h2>📚 Monster Library</h2>`;
-    if (encounteredMonsters.size===0) html += `<p style="color:#666">No monsters encountered yet.</p>`;
-    for (const mName of encounteredMonsters) {
-      let m = null;
-      for (const r of ['forest','desert','hell']) { m = MONSTERS[r].find(x=>x.name===mName); if(m) break; }
-      if (m) {
-        html += `<div class="modal-item"><svg viewBox="0 0 64 64" width="40" height="40">${m.svg}</svg>
-          <span class="item-name">${m.name}</span><span style="color:#999;font-size:.8rem">HP:${m.hp} ATK:${m.atk} DEF:${m.def} XP:${m.xp}</span></div>`;
-      }
-    }
-  }
-
-  else if (type==='inventory') {
-    html += `<h2>🎒 Inventory</h2>`;
-    if (P.inventory.length===0) html += `<p style="color:#666">Empty.</p>`;
-    P.inventory.forEach((item,i) => {
-      let actions = '';
-      if (item.type==='consumable') actions = `<button onclick="useItem(${i})">Use</button>`;
-      else actions = `<button onclick="equipItem(${i})">Equip</button>`;
-      html += `<div class="modal-item"><span class="item-name">${item.name}</span>${actions}
-        <div class="tooltip">${item.desc}</div></div>`;
-    });
-  }
-
-  else if (type==='equipment') {
-    html += `<h2>🛡️ Equipment</h2>`;
-    for (const slot of ['weapon','armor','accessory']) {
-      const eq = P.equipment[slot];
-      html += `<div class="modal-item"><span style="color:#7ec8e3;text-transform:capitalize">${slot}:</span>
-        <span class="item-name">${eq ? eq.name : '(empty)'}</span>
-        ${eq ? `<button onclick="unequipItem('${slot}')">Remove</button><div class="tooltip">${eq.desc}</div>` : ''}
-      </div>`;
-    }
-  }
-
-  mc.innerHTML = html;
-  ov.classList.add('open');
-}
-
-function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
-function closeModalOverlay(e) { if(e.target===e.currentTarget) closeModal(); }
-
-function innHeal() {
-  if (P.gold<10) return;
-  P.gold -= 10; P.hp = P.maxHp;
-  spawnParticle(document.querySelector('.building-btn'), '#4ecca3');
-  openModal('inn');
-  updateCityStats();
-}
-
-function buyItem(id) {
-  const item = SHOP_ITEMS.find(x=>x.id===id);
-  if (!item || P.gold<item.cost) return;
-  P.gold -= item.cost;
-  P.inventory.push({...item});
-  openModal('market');
-  updateCityStats();
-}
-
-function sellItem(idx) {
-  const item = P.inventory[idx];
-  P.gold += Math.floor(item.cost/2);
-  P.inventory.splice(idx,1);
-  openModal('market');
-  updateCityStats();
-}
-
-function equipItem(idx) {
-  const item = P.inventory[idx];
-  const slot = item.type==='weapon'?'weapon':item.type==='armor'?'armor':'accessory';
-  if (P.equipment[slot]) P.inventory.push(P.equipment[slot]);
-  P.equipment[slot] = item;
-  P.inventory.splice(idx,1);
-  openModal('inventory');
-  updateCityStats();
-}
-
-function unequipItem(slot) {
-  if (P.equipment[slot]) { P.inventory.push(P.equipment[slot]); P.equipment[slot]=null; }
-  openModal('equipment');
-  updateCityStats();
-}
-
-function useItem(idx) {
-  const item = P.inventory[idx];
-  if (item.heal) { P.hp = Math.min(P.maxHp, P.hp+item.heal); }
-  P.inventory.splice(idx,1);
-  openModal('inventory');
-  updateCityStats();
-}
-
-function upgradeEquip(slot) {
-  const eq = P.equipment[slot];
-  if (!eq) return;
-  const cost = Math.floor(eq.cost*0.6);
-  if (P.gold<cost) return;
-  P.gold -= cost;
-  if (eq.atk) eq.atk = Math.floor(eq.atk*1.4);
-  if (eq.def) eq.def = Math.floor(eq.def*1.4);
-  if (eq.crit) eq.crit = Math.floor(eq.crit*1.3);
-  if (eq.hp) eq.hp = Math.floor(eq.hp*1.3);
-  eq.cost = Math.floor(eq.cost*1.3);
-  eq.name = '★'+eq.name.replace(/^★+/,'');
-  eq.desc = `${eq.atk?'+'+eq.atk+' ATK ':''}${eq.def?'+'+eq.def+' DEF ':''}${eq.crit?'+'+eq.crit+'% CRIT ':''}${eq.hp?'+'+eq.hp+' HP ':''}`;
-  openModal('blacksmith');
-  updateCityStats();
-}
-
-/* ============================================================
-   DUNGEON GENERATION
-   ============================================================ */
-function enterDungeon(region) {
-  dungeon = { region, grid:[], playerPos:{x:0,y:0}, steps:0, exitPos:{x:6,y:6} };
-  generateDungeon(region);
-  showScreen('dungeon');
-  document.getElementById('dungeon-info').textContent = `Region: ${region.charAt(0).toUpperCase()+region.slice(1)} | Steps: 0`;
-  addLog('You enter the '+region+' dungeon...', 'info');
-}
-
-function generateDungeon(region) {
-  const g = dungeon.grid = [];
-  // Init all as walls
-  for (let y=0;y<7;y++) { g[y]=[]; for(let x=0;x<7;x++) g[y][x]={type:'wall',revealed:false,content:null}; }
-  // Carve path from (0,0) to (6,6) using random walk
-  const visited = new Set();
-  const path = [];
-  let cx=0, cy=0;
-  visited.add('0,0');
-  path.push([0,0]);
-  while (cx!==6||cy!==6) {
-    const dirs = [];
-    if (cx<6) dirs.push([1,0]);
-    if (cy<6) dirs.push([0,1]);
-    if (cx>0 && Math.random()<0.3) dirs.push([-1,0]);
-    if (cy>0 && Math.random()<0.3) dirs.push([0,-1]);
-    const [dx,dy] = dirs[Math.floor(Math.random()*dirs.length)];
-    cx+=dx; cy+=dy;
-    if (!visited.has(cx+','+cy)) { visited.add(cx+','+cy); path.push([cx,cy]); }
-  }
-  // Add some extra open tiles
-  for (let i=0;i<12;i++) {
-    const rx=Math.floor(Math.random()*7), ry=Math.floor(Math.random()*7);
-    visited.add(rx+','+ry);
-    path.push([rx,ry]);
-  }
-  // Set open tiles
-  for (const [px,py] of path) g[py][px].type = 'empty';
-  // Place start and exit
-  g[0][0] = { type:'empty', revealed:true, content:null };
-  g[6][6] = { type:'exit', revealed:false, content:null };
-  // Place content on empty tiles
-  for (const [px,py] of path) {
-    if ((px===0&&py===0)||(px===6&&py===6)) continue;
-    const r = Math.random();
-    if (r<0.3) g[py][px].content = { kind:'monster', monster:{...MONSTERS[region][Math.floor(Math.random()*3)]} };
-    else if (r<0.4) g[py][px].content = { kind:'treasure' };
-    else if (r<0.48) g[py][px].content = { kind:'shrine' };
-    else if (r<0.54) g[py][px].content = { kind:'trap' };
-    else if (r<0.58) g[py][px].content = { kind:'mimic', monster:{...MONSTERS[region][Math.floor(Math.random()*3)], name:'Mimic', hp:50, atk:15, gold:35, xp:40} };
-  }
-  // Reveal starting area
-  dungeon.playerPos = {x:0,y:0};
-  revealAround(0,0);
-}
-
-function revealAround(x,y) {
-  for (let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++) {
-    const nx=x+dx, ny=y+dy;
-    if (nx>=0&&nx<7&&ny>=0&&ny<7) dungeon.grid[ny][nx].revealed=true;
-  }
-}
-
-/* ============================================================
-   BOARD RENDERING
-   ============================================================ */
-function renderBoard() {
-  const board = document.getElementById('board');
-  board.className = 'board '+dungeon.region;
-  board.innerHTML = '';
-  const {x:px,y:py} = dungeon.playerPos;
-  for (let y=0;y<7;y++) for(let x=0;x<7;x++) {
-    const cell = dungeon.grid[y][x];
-    const tile = document.createElement('div');
-    tile.className = 'tile';
-    if (!cell.revealed) { tile.classList.add('fog'); tile.textContent='?'; }
-    else {
-      tile.classList.add('revealed');
-      if (cell.type==='wall') { tile.classList.add('wall'); tile.textContent='🧱'; }
-      else if (x===px&&y===py) { tile.classList.add('player'); tile.innerHTML=playerSVGSmall(); }
-      else if (cell.type==='exit') { tile.classList.add('exit'); tile.textContent='🚪'; }
-      else if (cell.content) {
-        if (cell.content.kind==='monster') { tile.classList.add('monster'); tile.textContent='👹'; }
-        else if (cell.content.kind==='treasure'||cell.content.kind==='mimic') { tile.classList.add('treasure'); tile.textContent='📦'; }
-        else if (cell.content.kind==='shrine') { tile.classList.add('event'); tile.textContent='⛩️'; }
-        else if (cell.content.kind==='trap') { tile.classList.add('event'); tile.textContent='⚠️'; }
-        else { tile.classList.add('empty'); }
-      } else { tile.classList.add('empty'); }
-      // Highlight adjacent movable tiles
-      if (cell.type!=='wall' && !(x===px&&y===py) && Math.abs(x-px)+Math.abs(y-py)===1) {
-        tile.classList.add('adjacent');
-        tile.onclick = () => movePlayer(x,y);
-      }
-    }
-    board.appendChild(tile);
-  }
-  updateDungeonStats();
-  document.getElementById('dungeon-info').textContent = `Region: ${dungeon.region.charAt(0).toUpperCase()+dungeon.region.slice(1)} | Steps: ${dungeon.steps}`;
-}
-
-function playerSVGSmall() {
-  if (P.cls==='Warrior') return '<svg viewBox="0 0 64 64"><rect x="26" y="4" width="12" height="28" rx="2" fill="#b0b0b0"/><circle cx="32" cy="48" r="14" fill="#c23152"/></svg>';
-  if (P.cls==='Mage') return '<svg viewBox="0 0 64 64"><polygon points="32,2 40,22 24,22" fill="#7ec8e3"/><rect x="30" y="22" width="4" height="30" rx="1" fill="#8b7355"/><circle cx="32" cy="48" r="14" fill="#4a1a6b"/></svg>';
-  if (P.cls==='Assassin') return '<svg viewBox="0 0 64 64"><path d="M32 4L38 20H26Z" fill="#555"/><circle cx="32" cy="48" r="14" fill="#1a3a1a"/></svg>';
-  return '<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="18" fill="#e94560" opacity=".7"/><text x="32" y="38" text-anchor="middle" fill="#fff" font-size="16">C</text></svg>';
-}
-
-/* ============================================================
-   PLAYER MOVEMENT & EVENTS
-   ============================================================ */
-function movePlayer(x,y) {
-  dungeon.playerPos = {x,y};
-  dungeon.steps++;
-  revealAround(x,y);
-  tickBuffs();
-  const cell = dungeon.grid[y][x];
-  if (cell.type==='exit') {
-    P.dungeonsCleared++;
-    addLog('You found the exit! Returning to Veridia.','info');
-    showScreen('city');
-    return;
-  }
-  if (cell.content) {
-    const c = cell.content;
-    if (c.kind==='monster') { startCombat(c.monster); cell.content=null; return; }
-    if (c.kind==='mimic') { addLog('It\'s a Mimic!','dmg'); startCombat(c.monster); cell.content=null; return; }
-    if (c.kind==='treasure') { handleTreasure(); cell.content=null; }
-    if (c.kind==='shrine') { handleShrine(); cell.content=null; }
-    if (c.kind==='trap') { handleTrap(); cell.content=null; }
-  }
-  renderBoard();
-}
-
-function handleTreasure() {
-  const gold = 10+Math.floor(Math.random()*30);
-  P.gold += gold;
-  addLog(`Found treasure! +${gold} gold`,'info');
-  // Chance for item drop
-  if (Math.random()<0.3) {
-    const item = {...SHOP_ITEMS[Math.floor(Math.random()*SHOP_ITEMS.length)]};
-    P.inventory.push(item);
-    addLog(`Found ${item.name}!`,'info');
-  }
-}
-
-function handleShrine() {
-  const stats = ['atk','def','hp'];
-  const stat = stats[Math.floor(Math.random()*3)];
-  const val = stat==='hp'?15:4;
-  P.buffs.push({stat,val,steps:10});
-  if (stat==='hp') { P.maxHp+=val; P.hp=Math.min(P.maxHp,P.hp+val); }
-  addLog(`Shrine blessing! +${val} ${stat.toUpperCase()} for 10 steps`,'heal');
-}
-
-function handleTrap() {
-  const dmg = Math.max(1, 10-Math.floor(getTotalStat('def')/3));
-  P.hp -= dmg;
-  addLog(`Trap! Took ${dmg} damage`,'dmg');
-  if (P.hp<=0) { gameOver(); }
-}
-
-function tickBuffs() {
-  P.buffs = P.buffs.filter(b => {
-    b.steps--;
-    if (b.steps<=0) {
-      if (b.stat==='hp') P.maxHp -= b.val;
-      addLog(`${b.stat.toUpperCase()} buff expired`,'info');
-      return false;
-    }
-    return true;
-  });
-}
-
-function fleeDungeon() {
-  addLog('You flee the dungeon!','info');
-  showScreen('city');
-}
-
-/* ============================================================
-   COMBAT SYSTEM
-   ============================================================ */
-function startCombat(monster) {
-  combat = { enemy:{...monster, maxHp:monster.hp}, turn:'player', log:[] };
-  encounteredMonsters.add(monster.name);
-  showScreen('combat');
-  renderCombat();
-  combatLog('A wild '+monster.name+' appears!');
-}
-
-function renderCombat() {
-  const e = combat.enemy;
-  const eHpPct = Math.max(0,e.hp/e.maxHp*100);
-  const pHpPct = Math.max(0,P.hp/P.maxHp*100);
-  document.getElementById('player-combatant').innerHTML = `
-    ${playerSVGSmall()}<h3>${P.name}</h3>
-    <div class="hp-text">HP: ${P.hp}/${P.maxHp}</div>
-    <div class="hp-bar-wrap" style="width:100%"><div class="hp-bar" style="width:${pHpPct}%"></div></div>`;
-  document.getElementById('enemy-combatant').innerHTML = `
-    <svg viewBox="0 0 64 64" width="80" height="80">${e.svg||''}</svg>
-    <h3>${e.name}</h3>
-    <div class="hp-text">HP: ${e.hp}/${e.maxHp}</div>
-    <div class="hp-bar-wrap" style="width:100%"><div class="hp-bar" style="width:${eHpPct}%"></div></div>`;
-  // Skill button
-  const sb = document.getElementById('skill-btn');
-  sb.disabled = P.skillCooldown>0;
-  sb.textContent = P.skillCooldown>0 ? `✨ ${P.skill||'Skill'} (${P.skillCooldown})` : `✨ ${P.skill||'Skill'}`;
-  // Potion button
-  const potions = P.inventory.filter(i=>i.type==='consumable');
-  document.getElementById('potion-btn').disabled = potions.length===0;
-  document.getElementById('potion-btn').textContent = `🧪 Potion (${potions.length})`;
-  // Disable if not player turn
-  const btns = document.getElementById('combat-actions');
-  btns.style.pointerEvents = combat.turn==='player'?'auto':'none';
-}
-
-function rollD20() { return Math.floor(Math.random()*20)+1; }
-
-function combatAttack() {
-  if (combat.turn!=='player') return;
-  const roll = rollD20();
-  const diceEl = document.getElementById('dice-result');
-  diceEl.textContent = '🎲 '+roll;
-  let dmg = 0;
-  const atk = getTotalStat('atk');
-  const crit = getTotalStat('crit');
-  if (roll===1) {
-    // Critical fail
-    const selfDmg = Math.max(1, Math.floor(atk/4));
-    P.hp -= selfDmg;
-    combatLog(`Critical fail! You hurt yourself for ${selfDmg}`,'dmg');
-    floatDmg(document.getElementById('player-combatant'), selfDmg, false);
-  } else {
-    let isCrit = roll===20 || (P.shadowStep) || (Math.random()*100<crit);
-    if (P.shadowStep) { P.shadowStep=false; isCrit=true; }
-    dmg = Math.max(1, atk + roll - combat.enemy.def);
-    if (isCrit) { dmg = Math.floor(dmg*2); combatLog(`CRITICAL HIT! ${dmg} damage!`,'crit'); }
-    else combatLog(`You deal ${dmg} damage (roll: ${roll})`);
-    combat.enemy.hp -= dmg;
-    floatDmg(document.getElementById('enemy-combatant'), dmg, isCrit);
-    document.getElementById('enemy-combatant').classList.add('shake');
-    setTimeout(()=>document.getElementById('enemy-combatant').classList.remove('shake'),300);
-  }
-  if (P.skillCooldown>0) P.skillCooldown--;
-  if (combat.enemy.hp<=0) { enemyDefeated(); return; }
-  if (P.hp<=0) { gameOver(); return; }
-  combat.turn='enemy';
-  renderCombat();
-  setTimeout(enemyTurn, 800);
-}
-
-function combatSkill() {
-  if (combat.turn!=='player'||P.skillCooldown>0) return;
-  const cls = P.cls;
-  if (cls==='Warrior') {
-    P.shieldBash = true;
-    P.skillCooldown = 4;
-    combatLog('Shield Bash! You will block the next attack.','info');
-  } else if (cls==='Mage') {
-    const dmg = Math.max(1, getTotalStat('atk')*2 - combat.enemy.def);
-    combat.enemy.hp -= dmg;
-    P.skillCooldown = 3;
-    combatLog(`Mana Blast! ${dmg} massive damage!`,'crit');
-    floatDmg(document.getElementById('enemy-combatant'), dmg, true);
-    document.getElementById('enemy-combatant').classList.add('shake');
-    setTimeout(()=>document.getElementById('enemy-combatant').classList.remove('shake'),300);
-    if (combat.enemy.hp<=0) { enemyDefeated(); return; }
-  } else if (cls==='Assassin') {
-    P.shadowStep = true;
-    P.skillCooldown = 3;
-    combatLog('Shadow Step! Next attack is guaranteed critical.','info');
-  } else {
-    // Custom class: Power Strike
-    const dmg = Math.max(1, Math.floor(getTotalStat('atk')*1.5) - combat.enemy.def);
-    combat.enemy.hp -= dmg;
-    P.skillCooldown = 3;
-    combatLog(`Power Strike! ${dmg} damage!`,'crit');
-    floatDmg(document.getElementById('enemy-combatant'), dmg, true);
-    if (combat.enemy.hp<=0) { enemyDefeated(); return; }
-  }
-  if (cls==='Warrior'||cls==='Assassin') {
-    // These skills don't end turn; player still attacks
-    renderCombat();
-    return;
-  }
-  combat.turn='enemy';
-  renderCombat();
-  setTimeout(enemyTurn, 800);
-}
-
-function combatPotion() {
-  if (combat.turn!=='player') return;
-  const idx = P.inventory.findIndex(i=>i.type==='consumable');
-  if (idx===-1) return;
-  const item = P.inventory[idx];
-  P.hp = Math.min(P.maxHp, P.hp + item.heal);
-  P.inventory.splice(idx,1);
-  combatLog(`Used ${item.name}! +${item.heal} HP`,'heal');
-  floatDmg(document.getElementById('player-combatant'), item.heal, false, true);
-  combat.turn='enemy';
-  renderCombat();
-  setTimeout(enemyTurn, 800);
-}
-
-function enemyTurn() {
-  const e = combat.enemy;
-  const roll = rollD20();
-  document.getElementById('dice-result').textContent = '🎲 '+roll;
-  if (P.shieldBash) {
-    P.shieldBash = false;
-    combatLog(`${e.name} attacks but Shield Bash blocks it!`,'info');
-  } else if (roll===1) {
-    combatLog(`${e.name} fumbles!`,'info');
-  } else {
-    let dmg = Math.max(1, e.atk + roll - getTotalStat('def'));
-    if (roll===20) { dmg = Math.floor(dmg*1.5); combatLog(`${e.name} CRITICAL! ${dmg} damage!`,'dmg'); }
-    else combatLog(`${e.name} deals ${dmg} damage (roll: ${roll})`,'dmg');
-    P.hp -= dmg;
-    floatDmg(document.getElementById('player-combatant'), dmg, roll===20);
-    document.getElementById('player-combatant').classList.add('shake');
-    setTimeout(()=>document.getElementById('player-combatant').classList.remove('shake'),300);
-  }
-  if (P.hp<=0) { gameOver(); return; }
-  combat.turn='player';
-  renderCombat();
-}
-
-function enemyDefeated() {
-  const e = combat.enemy;
-  document.getElementById('enemy-combatant').classList.add('flash');
-  P.gold += e.gold;
-  P.xp += e.xp;
-  P.monstersKilled++;
-  combatLog(`${e.name} defeated! +${e.xp} XP, +${e.gold} gold`,'info');
-  // Loot drop
-  if (Math.random()<0.25) {
-    const item = {...SHOP_ITEMS[Math.floor(Math.random()*SHOP_ITEMS.length)]};
-    P.inventory.push(item);
-    combatLog(`Loot: ${item.name}!`,'info');
-  }
-  setTimeout(()=>{
-    if (P.xp >= P.xpNext) { showLevelUp(); }
-    else { showScreen('dungeon'); renderBoard(); }
-  }, 1000);
-}
-
-/* ============================================================
-   LEVEL UP
-   ============================================================ */
-function showLevelUp() {
-  P.level++;
-  P.xp -= P.xpNext;
-  P.xpNext = Math.floor(P.xpNext * 1.4);
-  luStats = {hp:0,atk:0,def:0,crit:0};
-  luPts = 3;
-  document.getElementById('lu-pts').textContent = 'Points: 3';
-  ['hp','atk','def','crit'].forEach(s=>document.getElementById('lu-'+s).textContent='0');
-  document.getElementById('lu-confirm').disabled = true;
-  document.getElementById('levelup-overlay').classList.add('open');
-}
-
-function luAlloc(stat, dir) {
-  if (dir>0&&luPts<=0) return;
-  if (dir<0&&luStats[stat]<=0) return;
-  luStats[stat]+=dir; luPts-=dir;
-  document.getElementById('lu-'+stat).textContent = luStats[stat];
-  document.getElementById('lu-pts').textContent = 'Points: '+luPts;
-  document.getElementById('lu-confirm').disabled = luPts>0;
-}
-
-function confirmLevelUp() {
-  P.atk += luStats.atk*2;
-  P.def += luStats.def*2;
-  P.maxHp += luStats.hp*8;
-  P.hp = Math.min(P.maxHp, P.hp + luStats.hp*8);
-  P.crit += luStats.crit*3;
-  document.getElementById('levelup-overlay').classList.remove('open');
-  addLog(`Level up! Now Lv.${P.level}`,'heal');
-  // Check if still in combat context
-  showScreen('dungeon');
-  renderBoard();
-}
-
-/* ============================================================
-   GAME OVER
-   ============================================================ */
-function gameOver() {
-  document.getElementById('go-stats').textContent = `Level ${P.level} | Monsters Killed: ${P.monstersKilled} | Dungeons Cleared: ${P.dungeonsCleared} | Gold: ${P.gold}`;
-  showScreen('gameover');
-}
-
-/* ============================================================
-   LOGGING & EFFECTS
-   ============================================================ */
-function addLog(msg, cls='') {
-  const log = document.getElementById('game-log');
-  const div = document.createElement('div');
-  div.className = 'log-entry log-'+cls;
-  div.textContent = msg;
-  log.prepend(div);
-  if (log.children.length>50) log.lastChild.remove();
-}
-
-function combatLog(msg, cls='') {
-  const log = document.getElementById('combat-log');
-  const div = document.createElement('div');
-  div.className = 'log-entry log-'+cls;
-  div.textContent = msg;
-  log.prepend(div);
-  if (log.children.length>30) log.lastChild.remove();
-}
-
-function floatDmg(el, val, isCrit, isHeal) {
-  const d = document.createElement('div');
-  d.className = 'float-dmg'+(isCrit?' crit':'')+(isHeal?' heal':'');
-  d.textContent = (isHeal?'+':'-')+val;
-  d.style.left = '40%'; d.style.top = '10%';
-  el.appendChild(d);
-  setTimeout(()=>d.remove(),1000);
-}
-
-function spawnParticle(el, color) {
-  for (let i=0;i<5;i++) {
-    const p = document.createElement('div');
-    p.style.cssText = `position:absolute;width:6px;height:6px;border-radius:50%;background:${color};pointer-events:none;z-index:50;`;
-    p.className = 'float-dmg';
-    p.style.left = Math.random()*80+'%'; p.style.top = Math.random()*80+'%';
-    el.style.position='relative';
-    el.appendChild(p);
-    setTimeout(()=>p.remove(),1000);
-  }
-}
-</script>
+<!-- JS Modules (loaded in dependency order) -->
+<script src="js/state.js"></script>
+<script src="js/icons.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/effects.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/chargen.js"></script>
+<script src="js/town.js"></script>
+<script src="js/regions.js"></script>
+<script src="js/modals.js"></script>
+<script src="js/dungeon.js"></script>
+<script src="js/combat.js"></script>
+<script src="js/levelup.js"></script>
+<script src="js/main.js"></script>
 </body>
 </html>
