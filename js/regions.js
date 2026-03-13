@@ -143,7 +143,7 @@ function getRegionMapSVG() {
 function showRegionTip(evt, region) {
   var info = REGION_INFO[region];
   var tip = document.getElementById('region-tooltip');
-  if (!tip) return;
+  if (!tip || !info) return;
   tip.innerHTML = '<span class="tip-name">' + info.label + '</span><span class="tip-diff">Difficulty: ' + info.difficulty + '</span>';
   tip.classList.add('visible');
 
