@@ -1,0 +1,17 @@
+/* ===== COMBAT ===== */
+#combat-screen{background:linear-gradient(180deg,#1a0a1e 0%,#1a1a2e 100%);padding:20px}
+.combat-arena{display:flex;justify-content:space-around;align-items:center;max-width:600px;width:100%;margin-bottom:20px;flex-wrap:wrap;gap:20px}
+.combatant{text-align:center;padding:20px;border-radius:12px;background:#16213e;min-width:160px;position:relative}
+.combatant svg{width:80px;height:80px}
+.combatant h3{margin:8px 0 4px}
+.combatant .hp-text{font-size:.85rem;color:#999}
+.combat-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:16px}
+.combat-actions button{padding:10px 20px;border-radius:8px;font-size:1rem;font-weight:bold;display:flex;align-items:center;gap:6px}
+.combat-actions button svg{width:20px;height:20px;fill:currentColor}
+#atk-btn{background:linear-gradient(135deg,#e94560,#c23152);color:#fff}
+#skill-btn{background:linear-gradient(135deg,#7ec8e3,#4ea8c8);color:#111}
+#skill-btn:disabled{opacity:.4}
+#potion-btn{background:linear-gradient(135deg,#4ecca3,#2d8a6e);color:#111}
+#potion-btn:disabled{opacity:.4}
+.dice-result{font-size:2.5rem;font-weight:bold;color:#ffd700;min-height:60px;display:flex;align-items:center;justify-content:center}
+.combat-log{max-width:500px;width:100%;background:#111;border-radius:8px;padding:10px;max-height:150px;overflow-y:auto;font-size:.85rem;color:#999;text-align:left}

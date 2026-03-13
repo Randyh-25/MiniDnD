@@ -1,0 +1,15 @@
+/* ===== EFFECTS ===== */
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.shake{animation:shake .3s ease}
+@keyframes flash{0%{opacity:1}50%{opacity:0}100%{opacity:1}}
+.flash{animation:flash .15s ease 3}
+.float-dmg{position:absolute;color:#e94560;font-weight:bold;font-size:1.2rem;animation:floatUp 1s ease forwards;pointer-events:none;z-index:50}
+.float-dmg.heal{color:#4ecca3}
+.float-dmg.crit{color:#ffd700;font-size:1.5rem}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-40px)}}
+
+/* ===== GAME OVER ===== */
+#gameover-screen{background:linear-gradient(180deg,#1a0a0a,#1a1a2e);padding:20px;text-align:center}
+#gameover-screen h1{font-size:2.5rem;color:#e94560;margin-bottom:10px}
+#gameover-screen p{color:#999;margin-bottom:20px}
+#restart-btn{background:linear-gradient(135deg,#e94560,#c23152);color:#fff;padding:12px 40px;font-size:1.1rem;border-radius:30px}
